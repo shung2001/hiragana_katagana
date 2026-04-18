@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>가이와 일본어 문자 퀴즈</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 760px;
+      background: white;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    h1, h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+    .info {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .question-box {
+      text-align: center;
+      padding: 28px 16px;
+      background: #eef4ff;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+    .character {
+      font-size: 88px;
+      margin-bottom: 8px;
+    }
+    .question-text {
+      font-size: 18px;
+      color: #444;
+    }
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .choice-btn {
+      background: #f0f0f0;
+    }
+    .choice-btn:hover {
+      background: #dfe9ff;
+    }
+    .primary-btn {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+    .primary-btn:hover {
+      background: #1d4ed8;
+    }
+    .secondary-btn {
+      width: 100%;
+      background: #16a34a;
+      color: white;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    .secondary-btn:hover {
+      background: #15803d;
+    }
+    .result {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      min-height: 28px;
+      margin-bottom: 16px;
+    }
+    .correct { color: #15803d; }
+    .wrong { color: #b91c1c; }
+    .hidden { display: none; }
+    .final {
+      text-align: center;
+      background: #f8fafc;
+      padding: 24px;
+      border-radius: 16px;
+    }
+    .setup-box {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .field {
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .radio-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 16px;
+    }
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-top: 8px;
+    }
+    @media (max-width: 640px) {
+      .choices {
+        grid-template-columns: 1fr;
+      }
+      .info {
+        flex-direction: column;
+      }
+      .character {
+        font-size: 72px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>일본어 문자 퀴즈</h1>
+
+    <div id="setup-area" class="setup-box">
+      <h2>퀴즈 설정</h2>
+
+      <div class="field">
+        <label>문자 종류 선택</label>
+        <div class="radio-group">
+          <label><input type="radio" name="scriptType" value="hiragana" checked> 히라가나</label>
+          <label><input type="radio" name="scriptType" value="katakana"> 가타카나</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="question-count">문제 수 선택</label>
+        <select id="question-count">
+          <option value="5">5문제</option>
+          <option value="10" selected>10문제</option>
+          <option value="15">15문제</option>
+          <option value="20">20문제</option>
+        </select>
+        <div class="note">선택한 문자 세트 안에서 무작위로 문제가 출제됩니다.</div>
+      </div>
+
+      <button id="start-btn" class="primary-btn">퀴즈 시작</button>
+    </div>
+
+    <div id="quiz-area" class="hidden">
+      <div class="info">
+        <div id="progress">문제 1 / 10</div>
+        <div id="score">점수: 0</div>
+      </div>
+
+      <div class="question-box">
+        <div id="character" class="character">あ</div>
+        <div class="question-text">이 문자의 발음은 무엇인가요?</div>
+      </div>
+
+      <div id="choices" class="choices"></div>
+      <div id="result" class="result"></div>
+      <button id="next-btn" class="primary-btn hidden">다음 문제</button>
+    </div>
+
+    <div id="final-area" class="final hidden">
+      <h2>퀴즈 완료</h2>
+      <p id="final-score"></p>
+      <button id="restart-btn" class="secondary-btn">설정 화면으로 돌아가기</button>
+    </div>
+  </div>
+
+  <script>
+    const hiraganaData = [
+      { char: 'あ', answer: 'a' }, { char: 'い', answer: 'i' }, { char: 'う', answer: 'u' }, { char: 'え', answer: 'e' }, { char: 'お', answer: 'o' },
+      { char: 'か', answer: 'ka' }, { char: 'き', answer: 'ki' }, { char: 'く', answer: 'ku' }, { char: 'け', answer: 'ke' }, { char: 'こ', answer: 'ko' },
+      { char: 'さ', answer: 'sa' }, { char: 'し', answer: 'shi' }, { char: 'す', answer: 'su' }, { char: 'せ', answer: 'se' }, { char: 'そ', answer: 'so' },
+      { char: 'た', answer: 'ta' }, { char: 'ち', answer: 'chi' }, { char: 'つ', answer: 'tsu' }, { char: 'て', answer: 'te' }, { char: 'と', answer: 'to' },
+      { char: 'な', answer: 'na' }, { char: 'に', answer: 'ni' }, { char: 'ぬ', answer: 'nu' }, { char: 'ね', answer: 'ne' }, { char: 'の', answer: 'no' },
+      { char: 'は', answer: 'ha' }, { char: 'ひ', answer: 'hi' }, { char: 'ふ', answer: 'fu' }, { char: 'へ', answer: 'he' }, { char: 'ほ', answer: 'ho' },
+      { char: 'ま', answer: 'ma' }, { char: 'み', answer: 'mi' }, { char: 'む', answer: 'mu' }, { char: 'め', answer: 'me' }, { char: 'も', answer: 'mo' },
+      { char: 'や', answer: 'ya' }, { char: 'ゆ', answer: 'yu' }, { char: 'よ', answer: 'yo' },
+      { char: 'ら', answer: 'ra' }, { char: 'り', answer: 'ri' }, { char: 'る', answer: 'ru' }, { char: 'れ', answer: 're' }, { char: 'ろ', answer: 'ro' },
+      { char: 'わ', answer: 'wa' }, { char: 'を', answer: 'wo' }, { char: 'ん', answer: 'n' }
+    ];
+
+    const katakanaData = [
+      { char: 'ア', answer: 'a' }, { char: 'イ', answer: 'i' }, { char: 'ウ', answer: 'u' }, { char: 'エ', answer: 'e' }, { char: 'オ', answer: 'o' },
+      { char: 'カ', answer: 'ka' }, { char: 'キ', answer: 'ki' }, { char: 'ク', answer: 'ku' }, { char: 'ケ', answer: 'ke' }, { char: 'コ', answer: 'ko' },
+      { char: 'サ', answer: 'sa' }, { char: 'シ', answer: 'shi' }, { char: 'ス', answer: 'su' }, { char: 'セ', answer: 'se' }, { char: 'ソ', answer: 'so' },
+      { char: 'タ', answer: 'ta' }, { char: 'チ', answer: 'chi' }, { char: 'ツ', answer: 'tsu' }, { char: 'テ', answer: 'te' }, { char: 'ト', answer: 'to' },
+      { char: 'ナ', answer: 'na' }, { char: 'ニ', answer: 'ni' }, { char: 'ヌ', answer: 'nu' }, { char: 'ネ', answer: 'ne' }, { char: 'ノ', answer: 'no' },
+      { char: 'ハ', answer: 'ha' }, { char: 'ヒ', answer: 'hi' }, { char: 'フ', answer: 'fu' }, { char: 'ヘ', answer: 'he' }, { char: 'ホ', answer: 'ho' },
+      { char: 'マ', answer: 'ma' }, { char: 'ミ', answer: 'mi' }, { char: 'ム', answer: 'mu' }, { char: 'メ', answer: 'me' }, { char: 'モ', answer: 'mo' },
+      { char: 'ヤ', answer: 'ya' }, { char: 'ユ', answer: 'yu' }, { char: 'ヨ', answer: 'yo' },
+      { char: 'ラ', answer: 'ra' }, { char: 'リ', answer: 'ri' }, { char: 'ル', answer: 'ru' }, { char: 'レ', answer: 're' }, { char: 'ロ', answer: 'ro' },
+      { char: 'ワ', answer: 'wa' }, { char: 'ヲ', answer: 'wo' }, { char: 'ン', answer: 'n' }
+    ];
+
+    let currentData = [];
+    let shuffledQuiz = [];
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    const setupArea = document.getElementById('setup-area');
+    const quizArea = document.getElementById('quiz-area');
+    const finalArea = document.getElementById('final-area');
+    const startBtn = document.getElementById('start-btn');
+    const progressEl = document.getElementById('progress');
+    const scoreEl = document.getElementById('score');
+    const characterEl = document.getElementById('character');
+    const choicesEl = document.getElementById('choices');
+    const resultEl = document.getElementById('result');
+    const nextBtn = document.getElementById('next-btn');
+    const finalScoreEl = document.getElementById('final-score');
+    const restartBtn = document.getElementById('restart-btn');
+    const questionCountEl = document.getElementById('question-count');
+
+    function shuffle(array) {
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function getSelectedScript() {
+      return document.querySelector('input[name="scriptType"]:checked').value;
+    }
+
+    function getChoices(correctAnswer) {
+      const allAnswers = currentData.map(item => item.answer).filter(ans => ans !== correctAnswer);
+      const wrongChoices = shuffle(allAnswers).slice(0, 3);
+      return shuffle([correctAnswer, ...wrongChoices]);
+    }
+
+    function loadQuestion() {
+      answered = false;
+      resultEl.textContent = '';
+      resultEl.className = 'result';
+      nextBtn.classList.add('hidden');
+
+      const current = shuffledQuiz[currentIndex];
+      characterEl.textContent = current.char;
+      progressEl.textContent = `문제 ${currentIndex + 1} / ${shuffledQuiz.length}`;
+      scoreEl.textContent = `점수: ${score}`;
+
+      const choices = getChoices(current.answer);
+      choicesEl.innerHTML = '';
+
+      choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.addEventListener('click', () => checkAnswer(choice, current.answer));
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selected, correct) {
+      if (answered) return;
+      answered = true;
+
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === correct) {
+          btn.style.background = '#bbf7d0';
+        }
+        if (btn.textContent === selected && selected !== correct) {
+          btn.style.background = '#fecaca';
+        }
+      });
+
+      if (selected === correct) {
+        score++;
+        scoreEl.textContent = `점수: ${score}`;
+        resultEl.textContent = '정답입니다!';
+        resultEl.classList.add('correct');
+      } else {
+        resultEl.textContent = `오답입니다. 정답은 ${correct} 입니다.`;
+        resultEl.classList.add('wrong');
+      }
+
+      nextBtn.classList.remove('hidden');
+    }
+
+    function showFinal() {
+      quizArea.classList.add('hidden');
+      finalArea.classList.remove('hidden');
+      finalScoreEl.textContent = `총 ${shuffledQuiz.length}문제 중 ${score}문제 정답입니다.`;
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < shuffledQuiz.length) {
+        loadQuestion();
+      } else {
+        showFinal();
+      }
+    }
+
+    function startQuiz() {
+      const selectedScript = getSelectedScript();
+      const requestedCount = Number(questionCountEl.value);
+
+      currentData = selectedScript === 'hiragana' ? hiraganaData : katakanaData;
+      const maxCount = Math.min(requestedCount, currentData.length);
+
+      shuffledQuiz = shuffle(currentData).slice(0, maxCount);
+      currentIndex = 0;
+      score = 0;
+
+      setupArea.classList.add('hidden');
+      finalArea.classList.add('hidden');
+      quizArea.classList.remove('hidden');
+
+      loadQuestion();
+    }
+
+    function goToSetup() {
+      quizArea.classList.add('hidden');
+      finalArea.classList.add('hidden');
+      setupArea.classList.remove('hidden');
+    }
+
+    startBtn.addEventListener('click', startQuiz);
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', goToSetup);
+  </script>
+</body>
+</html>
